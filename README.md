@@ -137,7 +137,7 @@ To download several themes for the switcher without repeatedly replacing the act
 
 The command accepts theme names without regard to letter case or hyphens, validates the full list before downloading, and leaves the currently installed theme unchanged. Use `Super+Alt+T` in bspwm to switch between the fetched themes.
 
-Install the graphics driver that matches your GPU first. Log into a TTY and run `startx` to start bspwm. Set a keyboard layout for X by exporting `DOTFILES_XKB_LAYOUT` before starting X, for example `DOTFILES_XKB_LAYOUT=es startx`. The installer does not enable a display manager or change the system keyboard layout.
+Install the graphics driver that matches your GPU first. After `./setup.sh base`, the supplied Bash and Zsh login profiles start X automatically when you log in on TTY 1; `.xinitrc` launches bspwm. To choose the X keyboard layout, set `DOTFILES_XKB_LAYOUT=es` before logging in, or run `DOTFILES_XKB_LAYOUT=es startx` manually. The installer does not enable a display manager, log you in automatically, or change the system keyboard layout. If you use a display manager, select the bspwm session there and remove the automatic `startx` block from your login profile to avoid starting X twice.
 
 Use `./setup.sh list-themes` to see available names. The theme switcher is bound to `Super+Alt+T`; it requires a graphical bspwm session and Rofi. Press `Super+F1` inside bspwm to open the searchable keyboard shortcut guide. `Ctrl+Alt+W` opens the Rofi wallpaper chooser for images in `~/.wallpapers` or `~/Pictures/Wallpapers`; feh restores the selected wallpaper next session. The Rofi launcher uses a larger 12 pt system sans-serif font and remains fully keyboard navigable.
 
