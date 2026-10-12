@@ -11,6 +11,7 @@ Usage:
   ./setup.sh aur PACKAGE [PACKAGE ...]
   ./setup.sh base
   ./setup.sh rice THEME
+  ./setup.sh fetch-themes THEME [THEME ...]
   ./setup.sh all THEME
   ./setup.sh list-themes
 
@@ -19,6 +20,7 @@ Commands:
   aur          Install explicitly named AUR packages through yay or paru.
   base         Install shared dotfiles, fonts, icons and helper scripts.
   rice THEME   Install one theme (for example: nord, horizon, dracula).
+  fetch-themes Download multiple theme submodules without changing the active theme.
   all THEME    Install packages, base files and the selected theme.
   list-themes  Show themes available in this checkout.
 
@@ -43,6 +45,10 @@ case "$command_name" in
     rice)
         [[ -n "$theme_name" ]] || { usage >&2; exit 2; }
         exec "$DOTFILES_ROOT/setup-scripts/rices.sh" "$theme_name"
+        ;;
+    fetch-themes)
+        shift
+        exec "$DOTFILES_ROOT/setup-scripts/fetch-themes.sh" "$@"
         ;;
     all)
         [[ -n "$theme_name" ]] || { usage >&2; exit 2; }

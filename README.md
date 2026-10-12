@@ -129,6 +129,14 @@ cd dotfiles
 
 `packages` uses the official Arch repositories and runs an interactive `pacman -Syu --needed`. `base` copies shared configuration, fonts, icons and scripts, then installs the Neovim plugins when Neovim is available. `rice` initializes the selected theme submodule and copies its files. Each command can be run separately. `./setup.sh all nord` runs all three in that order.
 
+To download several themes for the switcher without repeatedly replacing the active configuration, run:
+
+```sh
+./setup.sh fetch-themes Horizon Nord PinkNord SolarizedDark PinkNordAlternative Dracula Ayu
+```
+
+The command accepts theme names without regard to letter case or hyphens, validates the full list before downloading, and leaves the currently installed theme unchanged. Use `Super+Alt+T` in bspwm to switch between the fetched themes.
+
 Install the graphics driver that matches your GPU first. Log into a TTY and run `startx` to start bspwm. Set a keyboard layout for X by exporting `DOTFILES_XKB_LAYOUT` before starting X, for example `DOTFILES_XKB_LAYOUT=es startx`. The installer does not enable a display manager or change the system keyboard layout.
 
 Use `./setup.sh list-themes` to see available names. The theme switcher is bound to `Super+Alt+T`; it requires a graphical bspwm session and Rofi. Press `Super+F1` inside bspwm to open the searchable keyboard shortcut guide. `Ctrl+Alt+W` opens the Rofi wallpaper chooser for images in `~/.wallpapers` or `~/Pictures/Wallpapers`; feh restores the selected wallpaper next session. The Rofi launcher uses a larger 12 pt system sans-serif font and remains fully keyboard navigable.
