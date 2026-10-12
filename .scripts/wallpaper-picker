@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+command -v feh >/dev/null 2>&1 || {
+    printf 'feh is not installed. Run ./setup.sh packages first.\n' >&2
+    exit 1
+}
+command -v rofi >/dev/null 2>&1 || {
+    printf 'rofi is not installed. Run ./setup.sh packages first.\n' >&2
+    exit 1
+}
+
+wallpaper_dirs=()
+for directory in "$HOME/.wallpapers" "$HOME/Pictures/Wallpapers"; do
+    [[ -d "$directory" ]] && wallpaper_dirs+=("$directory")
+done
+
+if ((${#wallpaper_dirs[@]} == 0)); then
+    rofi -e 'No wallpaper folders found. Add images to ~/.wallpapers or ~/Pictures/Wallpapers.'
+    exit 0
+fi
+
+mapfile -d '' -t images < <(
+    find "${wallpaper_dirs[@]}" -type f \( \
+        -iname '*.avif' -o -iname '*.bmp' -o -iname '*.gif' -o \
+        -iname '*.jpeg' -o -iname '*.jpg' -o -iname '*.png' -o \
+        -iname '*.tif' -o -iname '*.tiff' -o -iname '*.webp' \
+    \) -print0 | sort -z
+)
+
+if ((${#images[@]} == 0)); then
+    rofi -e 'No wallpaper images found in ~/.wallpapers or ~/Pictures/Wallpapers.'
+    exit 0
+fi
+
+selected="$(printf '%s\n' "${images[@]}" | rofi -dmenu -i -p 'Wallpaper')" || exit 0
+[[ -n "$selected" ]] || exit 0
+feh --bg-fill "$selected"

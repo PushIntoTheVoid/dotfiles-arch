@@ -16,7 +16,6 @@ bspwm
 sxhkd
 picom
 polybar
-nitrogen
 dunst
 libnotify
 rofi

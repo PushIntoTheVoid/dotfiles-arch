@@ -19,7 +19,7 @@ Here are some details about my setup:
 - **Notify Daemon**                : [dunst](https://wiki.archlinux.org/index.php/Dunst) 🔔 
 - **Application Launcher**         : [rofi](https://github.com/davatorium/rofi) :rocket: apps & sidebar menu!
 - **File Manager**                 : [thunar](https://wiki.archlinux.org/index.php/Thunar)/[ranger](https://github.com/ranger/ranger) 📂 minimal file managers!
-- **Wallpaper Manager**            : [nitrogen](https://github.com/l3ib/nitrogen) 🖼️
+- **Wallpaper Manager**            : [feh](https://feh.finalrewind.org/) 🖼️
 
 <br/>
 <br/>
@@ -131,6 +131,6 @@ cd dotfiles
 
 Install the graphics driver that matches your GPU first. Log into a TTY and run `startx` to start bspwm. Set a keyboard layout for X by exporting `DOTFILES_XKB_LAYOUT` before starting X, for example `DOTFILES_XKB_LAYOUT=es startx`. The installer does not enable a display manager or change the system keyboard layout.
 
-Use `./setup.sh list-themes` to see available names. The theme switcher is bound to `Super+Alt+T`; it requires a graphical bspwm session and Rofi. Press `Super+F1` inside bspwm to open the searchable keyboard shortcut guide. The Rofi launcher uses a larger 12 pt system sans-serif font and remains fully keyboard navigable.
+Use `./setup.sh list-themes` to see available names. The theme switcher is bound to `Super+Alt+T`; it requires a graphical bspwm session and Rofi. Press `Super+F1` inside bspwm to open the searchable keyboard shortcut guide. `Ctrl+Alt+W` opens the Rofi wallpaper chooser for images in `~/.wallpapers` or `~/Pictures/Wallpapers`; feh restores the selected wallpaper next session. The Rofi launcher uses a larger 12 pt system sans-serif font and remains fully keyboard navigable.
 
 Optional packages from the AUR are not required for the base desktop. Review each AUR package yourself, install yay or paru, then pass explicit names to `./setup.sh aur PACKAGE [PACKAGE ...]`.

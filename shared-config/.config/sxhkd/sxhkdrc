@@ -61,7 +61,7 @@ super + shift + s
 	scrot -s /tmp/screenshot.png && xclip -selection clipboard -t image/png -i /tmp/screenshot.png
 
 ctrl + alt + w
-	nitrogen
+	bash ~/.scripts/wallpaper-picker
 
 ctrl + alt + v
 	pavucontrol

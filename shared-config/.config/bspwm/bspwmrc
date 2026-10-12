@@ -21,7 +21,9 @@ if command -v picom >/dev/null 2>&1; then
     fi
 fi
 if command -v dunst >/dev/null 2>&1; then dunst & fi
-if command -v nitrogen >/dev/null 2>&1; then nitrogen --restore & fi
+if command -v feh >/dev/null 2>&1 && [[ -r "$HOME/.fehbg" ]]; then
+    bash "$HOME/.fehbg" &
+fi
 if command -v xsetroot >/dev/null 2>&1; then xsetroot -cursor_name left_ptr & fi
 if command -v lxpolkit >/dev/null 2>&1; then lxpolkit &
 elif command -v /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 >/dev/null 2>&1; then
