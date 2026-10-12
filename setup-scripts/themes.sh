@@ -1,48 +1,53 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-replace_user="zodd"
+source "$(dirname -- "${BASH_SOURCE[0]}")/lib/common.sh"
+require_regular_user
+require_command rsync
 
-echo "[INFO]: Copying themes, icons, fonts and scripts..."
-notify-send -i ./setup-scripts/resources/white-brush.png "[INFO]: Copying themes, icons, fonts and scripts..." &
+printf 'Installing shared configuration for %s\n' "$HOME"
+copy_home_tree_with_backup "$DOTFILES_ROOT/shared-config" "$HOME" shared-config
 
-sudo cat ./environment >> /etc/environment
+for item in .scripts .fonts .icons .themes .wallpapers; do
+    [[ -d "$DOTFILES_ROOT/$item" ]] || continue
+    copy_home_tree_with_backup "$DOTFILES_ROOT/$item" "$HOME/$item" "root-$item"
+done
+if [[ -d "$HOME/.fonts" ]] && command -v fc-cache >/dev/null 2>&1; then
+    fc-cache -f "$HOME/.fonts"
+fi
 
-# screenshots folder to store scrot screenshots
-[ -d $HOME/Pictures/Screenshots ] || mkdir -p $HOME/Pictures/Screenshots
+if command -v nvim >/dev/null 2>&1 && [[ -r "$HOME/.config/nvim/init.vim" ]]; then
+    if ! nvim --headless '+PlugInstall --sync' +qall; then
+        printf 'Warning: Neovim plugins could not be installed; rerun :PlugInstall later.\n' >&2
+    elif [[ -f "$HOME/.config/nvim/plugged/coc.nvim/package.json" ]] && command -v npm >/dev/null 2>&1; then
+        if ! npm --prefix "$HOME/.config/nvim/plugged/coc.nvim" install; then
+            printf 'Warning: coc.nvim dependencies could not be installed; rerun npm install in its plugin directory.\n' >&2
+        fi
+    fi
+fi
 
-echo "[INFO]: Copying wallpapers..."
-cp -r ./.wallpapers $HOME
-echo "[INFO]: Copying scripts..."
-cp -r ./.scripts $HOME
-echo "[INFO]: Copying fonts..."
-cp -r ./.fonts $HOME
-echo "[INFO]: Copying themes..."
-cp -r ./.themes $HOME
-echo "[INFO]: Copying icons..."
-cp -r ./.icons $HOME
+mkdir -p -- "$HOME/.scripts"
+if [[ ! -e "$HOME/.scripts/custom-autostart" ]]; then
+    cat > "$HOME/.scripts/custom-autostart" <<'AUTOSTART'
+#!/usr/bin/env bash
+# Put personal applications to start with bspwm in this file.
+AUTOSTART
+    chmod 755 "$HOME/.scripts/custom-autostart"
+fi
 
-# copy global/shared config to $HOME
-cp -rv ./shared-config/. $HOME
+repo_file="$HOME/.config/dotfiles/repo"
+mkdir -p -- "$(dirname -- "$repo_file")"
+installed_repo=""
+if [[ -r "$repo_file" ]]; then
+    IFS= read -r installed_repo < "$repo_file" || true
+fi
+if [[ "$installed_repo" != "$DOTFILES_ROOT" ]]; then
+    if [[ -e "$repo_file" ]]; then
+        mkdir -p -- "$BACKUP_ROOT/.config/dotfiles"
+        cp -a -- "$repo_file" "$BACKUP_ROOT/.config/dotfiles/repo"
+    fi
+    printf '%s\n' "$DOTFILES_ROOT" > "$repo_file"
+fi
 
-# install plugins for nvim
-nvim -E -s -u "$HOME/.config/nvim/init.vim" +PlugInstall +qall
-
-# install nvim coc plugin
-cd $HOME/.config/nvim/plugged/coc.nvim && npm i && cd
-
-# devicons for ranger
-git clone https://github.com/alexanderjeurissen/ranger_devicons ~/.config/ranger/plugins/ranger_devicons
-
-sed -i "s/$replace_user/$USER/g" $HOME/.zshrc $HOME/.config/sxhkd/sxhkdrc*
-
-[ -f $HOME/.scripts/custom-autostart ] || echo '#!/bin/bash' >> $HOME/.scripts/custom-autostart && chmod +x $HOME/.scripts/custom-autostart 
-
-# default wm is bspwm
-cp $HOME/.config/sxhkd/sxhkdrc.bspwm $HOME/.config/sxhkd/sxhkdrc
-
-# change user default shell to zsh, will require password and reboot to apply changes
-chsh -s /usr/bin/zsh
-
-# ask user for keyboard layout
-./setup-scripts/kb-layout.sh
-
+printf 'Shared configuration installed. Backups, when needed, are in %s\n' "$BACKUP_ROOT"
+printf 'Start bspwm with startx after reviewing ~/.xinitrc.\n'

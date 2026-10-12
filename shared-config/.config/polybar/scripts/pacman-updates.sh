@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-[[ $(cat /etc/os-release | grep arch) ]] && yay -Qu | wc -l
-#[[ $(cat /etc/os-release | grep debian) ]] && apt list --upgradeable | wc -l
+if ! command -v pacman >/dev/null 2>&1; then
+    printf '0\n'
+    exit 0
+fi
 
-[[ $(cat /etc/os-release | grep debian) ]] && apt list --upgradable 2>/dev/null | wc -l
+pacman -Qu 2>/dev/null | awk 'END { print NR + 0 }'

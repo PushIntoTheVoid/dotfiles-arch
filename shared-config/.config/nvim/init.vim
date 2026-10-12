@@ -194,7 +194,11 @@ vnoremap p "+p
 map <M-p> <M-P><Esc>
 map <M-y> <M-Y><Esc>
 
-source $HOME/.config/nvim/colorscheme.vim
+let s:colorscheme_file = expand('$HOME/.config/nvim/colorscheme.vim')
+if filereadable(s:colorscheme_file)
+  execute 'source' fnameescape(s:colorscheme_file)
+endif
+unlet s:colorscheme_file
 
 " minimap config
 "let g:minimap_auto_start = 1

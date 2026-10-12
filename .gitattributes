@@ -1,0 +1,8 @@
+* text=auto
+*.sh text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+setup.sh text eol=lf
+shared-config/.xinitrc text eol=lf
+shared-config/.zshrc text eol=lf
+shared-config/.config/sxhkd/sxhkdrc text eol=lf

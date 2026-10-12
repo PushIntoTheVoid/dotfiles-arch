@@ -1,40 +1,13 @@
-#! /bin/bash
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-echo "[START]: packages installation..."
+source "$(dirname -- "${BASH_SOURCE[0]}")/lib/common.sh"
+require_regular_user
+require_arch
+require_command sudo
 
-# import keys
-./.scripts/addkey.sh `cat ./setup-scripts/resources/keys | grep -v '#'`
+mapfile -t packages < <(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' "$DOTFILES_ROOT/setup-scripts/resources/arch-packages.txt")
+(( ${#packages[@]} > 0 )) || die 'The Arch package list is empty.'
 
-# output packages directory creation
-[ -d $HOME/Downloads/git-downloads ] || mkdir -p $HOME/Downloads/git-downloads
-
-#
-# AUR
-#
-
-# yay
-# https://aur.archlinux.org/yay.git
-sudo pacman -Qi yay || ./.scripts/aur-get https://aur.archlinux.org/yay.git
-yay -Syu
-
-yay -S `cat ./setup-scripts/resources/packages.txt`
-
-pip install dbus-python
-
-# spicetify-cli
-# https://aur.archlinux.org/spicetify-cli.git
-# spicetify config current_theme $THEME_NAME
-# spicetify auto backup apply
-sudo chmod a+wr /opt/spotify
-sudo chmod a+wr /opt/spotify/Apps -R
-
-#
-# GITHUB
-#
-
-# BeautifulDiscord
-# https://github.com/leovoel/BeautifulDiscord
-#python3 -m pip install -U https://github.com/leovoel/BeautifulDiscord/archive/master.zip
-# use: python -m beautifuldiscord --css ~/.config/discord/rices/$THEME_NAME
-
-echo "[FINISHED]: packages installation"
+printf 'Installing the bspwm desktop dependencies from the official Arch repositories.\n'
+sudo pacman -Syu --needed "${packages[@]}"

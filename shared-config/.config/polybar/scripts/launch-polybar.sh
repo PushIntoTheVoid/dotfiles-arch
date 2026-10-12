@@ -1,14 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-# Terminate already running bar instances
-killall -q polybar
+command -v polybar >/dev/null 2>&1 || { printf 'polybar is not installed.\n' >&2; exit 1; }
+config="$HOME/.config/polybar/config"
+[[ -r "$config" ]] || { printf 'Polybar config not found: %s (install a rice first).\n' "$config" >&2; exit 1; }
 
-# Wait until the processes have been shut down
-while pgrep -u $UID -x polybar >/dev/null; do sleep 1; done
+pkill -u "$(id -u)" -x polybar 2>/dev/null || true
+for _ in {1..30}; do
+    pgrep -u "$(id -u)" -x polybar >/dev/null 2>&1 || break
+    sleep 0.1
+done
+if pgrep -u "$(id -u)" -x polybar >/dev/null 2>&1; then
+    printf 'An existing Polybar process did not stop.\n' >&2
+    exit 1
+fi
 
-# Launch Polybar
-polybar example &
-
-sleep 1
-xdo lower -N Polybar
-
+polybar --config="$config" example &

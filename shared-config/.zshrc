@@ -10,7 +10,7 @@ fi
 
 # Path to your oh-my-zsh installation.
 ZSH_DISABLE_COMPFIX="true"
-export ZSH="/home/zodd/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 DISABLE_AUTO_UPDATE="true"
 
 # Set name of the theme to load --- if set to "random", it will
@@ -115,26 +115,26 @@ source $ZSH/oh-my-zsh.sh
 # -------------------- VARIABLES --------------------
 #
 
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
-export PATH="$HOME/.config/polybar/scripts:$PATH"
-export PATH="$DOTFILES/setup-scripts:$PATH"
-export PATH="/home/zodd/.local/bin:$PATH"
-export PATH="/home/zodd/Documents/git-lab/dotfiles/setup-scripts:$PATH"
-PATH=$PATH:$HOME/.config/polybar/scripts:$HOME/.scripts:$HOME/.scripts/theme-swap
-export PATH="/home/zodd/.stack/snapshots/x86_64-linux-tinfo6/fe767865424443a2eed6f45f1f52e31d92286477e7e51ee31adfa3e42e907dac/8.8.4/bin:/home/zodd/.stack/compiler-tools/x86_64-linux-tinfo6/ghc-8.8.4/bin:/home/zodd/.stack/programs/x86_64-linux/ghc-tinfo6-8.8.4/bin:home/zodd/.yarn/bin:/home/zodd/.config/yarn/global/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/var/lib/snapd/snap/bin:$PATH"
-
-export DOTFILES="$HOME/Documents/git-lab/dotfiles"
-export RICES="$DOTFILES/rices"
+export PATH="$HOME/.local/bin:$HOME/.config/polybar/scripts:$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$HOME/.scripts:$PATH"
+if [[ -z "${DOTFILES_REPO:-}" && -r "$HOME/.config/dotfiles/repo" ]]; then
+  IFS= read -r DOTFILES_REPO < "$HOME/.config/dotfiles/repo"
+fi
+export DOTFILES="${DOTFILES_REPO:-}"
+if [[ -n "$DOTFILES" ]]; then
+  export RICES="$DOTFILES/rices"
+else
+  unset RICES
+fi
 export BROWSER="firefox"
 export WALLPAPERS="$HOME/.wallpapers"
-export PROGRAMMING="$HOME/Dropbox/Programming"
+export PROGRAMMING="${PROGRAMMING:-$HOME/Projects}"
 
-export PINK_NORD="$DOTFILES/rices/PinkNord"
-export PINK_NORD_ALTERNATIVE="$DOTFILES/rices/PinkNordAlternative"
-export SOLARIZED_DARK="$DOTFILES/rices/SolarizedDark"
-export GRUVBOX="$DOTFILES/rices/Gruvbox"
-export NORD="$DOTFILES/rices/Nord"
-export DOOMBOX="$DOTFILES/rices/Doombox"
+export PINK_NORD="${DOTFILES:+$DOTFILES/rices/PinkNord}"
+export PINK_NORD_ALTERNATIVE="${DOTFILES:+$DOTFILES/rices/PinkNordAlternative}"
+export SOLARIZED_DARK="${DOTFILES:+$DOTFILES/rices/SolarizedDark}"
+export GRUVBOX="${DOTFILES:+$DOTFILES/rices/Gruvbox}"
+export NORD="${DOTFILES:+$DOTFILES/rices/Nord}"
+export DOOMBOX="${DOTFILES:+$DOTFILES/rices/Doombox}"
 
 #ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=2,regular,underline"
 
@@ -160,7 +160,7 @@ alias 2tb='cd $HOME/2tb'
 alias 250gb='cd $HOME/250gb'
 
 # dotfiles
-alias dotfiles='cd $HOME/Documents/git-lab/dotfiles'
+alias dotfiles='cd "$DOTFILES"'
 
 # git-d => cd ~/Downloads/git-downloads
 alias git-d='cd $HOME/Downloads/git-downloads'
@@ -259,7 +259,7 @@ alias upload-all-rices="cd $DOTFILES/rices && find * -maxdepth 0 -type d -exec u
 # ---------------------------------------- Showcase ----------------------------------------
 
 # choose neofetch ascii distro
-alias neofetch="clear && $HOME/.config/neofetch/launch-neofetch.sh"
+alias neofetch="clear && bash $HOME/.scripts/dotfetch"
 
 # ---------------------------------------- Random ----------------------------------------
 

@@ -1,8 +1,5 @@
 #!/bin/bash
 
-setxkbmap es
-xsetroot -cursor_name left_ptr
-
 if [ -d /etc/X11/xinit/xinitrc.d ]; then
   for f in /etc/X11/xinit/xinitrc.d/*; do
     [ -x "$f" ] && . "$f"
@@ -10,10 +7,13 @@ if [ -d /etc/X11/xinit/xinitrc.d ]; then
   unset f
 fi
 
-xset +fp /usr/share/fonts/local &
-xset fp rehash &
-xrdb ~/.Xresources &
-xsetroot -cursor_name left_ptr &
+if [ -n "${DOTFILES_XKB_LAYOUT:-}" ] && command -v setxkbmap >/dev/null 2>&1; then
+  setxkbmap "$DOTFILES_XKB_LAYOUT"
+fi
+
+if command -v xrdb >/dev/null 2>&1 && [ -r "$HOME/.Xresources" ]; then
+  xrdb "$HOME/.Xresources" &
+fi
 exec bspwm
 
 #source /etc/X11/xinit/xinitrc.d/50-systemd-user.sh

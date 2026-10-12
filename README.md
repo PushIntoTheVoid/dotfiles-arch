@@ -113,101 +113,24 @@ Here are some details about my setup:
 
 ![alt text](readme-resources/scripts_.png)
 
-#### ⚠️ WARNING - These are my personal config files, executing these scripts will overwrite several configuration files in your system. Only execute these in case you have a backup of your current configuration.
+## Arch Linux and bspwm installation
 
-## :arrow_down: Download
+These dotfiles target Arch Linux, Xorg and bspwm. Review the selected theme before installing it. Changed files are backed up under `~/.local/state/dotfiles-backups/`.
 
-ℹ️ For now, it's **mandatory** to clone this repo in `~/Documents/git-lab` to use the [Theme Swap Utility](#art-custom-theme-swap-utility), otherwise you won't be able to switch between these themes on the fly.
+Clone the repository wherever you keep your projects, then install the desktop packages, shared configuration and one theme:
 
-```
-mkdir -p ~/Documents/git-lab && git clone --depth=1 https://github.com/zoddDev/dotfiles.git ~/Documents/git-lab/dotfiles && cd ~/Documents/git-lab/dotfiles
-```
-
-<hr>
-
-## :gear: Installation
-You can install the needed packages and configuration files by running the setup executable.
-
-### 📦 Installing needed packages and general configurations:
-
-#### ℹ️ Package installation is ONLY supported for **Arch Linux** based systems (installation via pacman).
-
-Execute:
-
-```shell
-./setup.sh <ARG> 
+```sh
+git clone https://github.com/zoddDev/dotfiles.git
+cd dotfiles
+./setup.sh packages
+./setup.sh base
+./setup.sh rice nord
 ```
 
-where 
-```<ARG>```
-may be:
+`packages` uses the official Arch repositories and runs an interactive `pacman -Syu --needed`. `base` copies shared configuration, fonts, icons and scripts, then installs the Neovim plugins when Neovim is available. `rice` initializes the selected theme submodule and copies its files. Each command can be run separately. `./setup.sh all nord` runs all three in that order.
 
-```
-packages        - installs needed packages using yay (also installs yay if needed)
-themes          - installs shared configuration between all rices: .themes, .icons, .fonts, wallpapers and necessary scripts
-```
+Install the graphics driver that matches your GPU first. Log into a TTY and run `startx` to start bspwm. Set a keyboard layout for X by exporting `DOTFILES_XKB_LAYOUT` before starting X, for example `DOTFILES_XKB_LAYOUT=es startx`. The installer does not enable a display manager or change the system keyboard layout.
 
+Use `./setup.sh list-themes` to see available names. The theme switcher is bound to `Super+Alt+T`; it requires a graphical bspwm session and Rofi. Press `Super+F1` inside bspwm to open the searchable keyboard shortcut guide. The Rofi launcher uses a larger 12 pt system sans-serif font and remains fully keyboard navigable.
 
-### 🖼️ Installing a specific rice:
-
-Execute:
-
-
-```shell
-./setup.sh <ARG> <RICE_NAME>
-```
-
-where 
-```<ARG>```
-may be:
-
-```
-rice         - downloads (if needed) and installs <RICE_NAME> rice
-all          - installs all at once: packages, GTK themes, etc. And finally installs <RICE_NAME> theme if this argument was passed
-```
-
-where 
-```<RICE_NAME>```
-may be:
-
-```
-nord                    - Nord theme
-dracula                 - Dracula theme
-gruvbox                 - Gruvbox theme
-gruvbox-material        - Soft edition of Gruvbox theme
-solarized-dark          - Solarized Dark theme
-horizon                 - Based on VS Code Horizon theme
-forest                  - Everforest theme
-pink-nord               - Pink Nord theme
-pink-nord-alternative   - Based on Fleon theme
-doombox                 - Doom version of gruvbox theme
-ayu                     - Ayu theme
-```
-
-### :information_source: Use cases:
-
-```
-setup.sh all horizon
-```
-(This command would install all needed packages, themes, icons and would also install [**Horizon**](https://github.com/zoddDev/Horizon) rice)
-
-<hr>
-
-```
-setup.sh packages
-```
-(This command would download and install all the needed packages using yay)
-
-<hr>
-
-```
-setup.sh themes
-```
-(This command would install shared configurations between all rices, mandatory)
-
-<hr>
-
-```
-setup.sh rice horizon
-```
-(This command would install [**Horizon**](https://github.com/zoddDev/Horizon) rice)
+Optional packages from the AUR are not required for the base desktop. Review each AUR package yourself, install yay or paru, then pass explicit names to `./setup.sh aur PACKAGE [PACKAGE ...]`.

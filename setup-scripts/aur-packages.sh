@@ -1,41 +1,21 @@
-#! /bin/bash
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-echo "[START]: aur/external-packages installation..."
+source "$(dirname -- "${BASH_SOURCE[0]}")/lib/common.sh"
+require_regular_user
+require_arch
+(( $# > 0 )) || die "Usage: $0 PACKAGE [PACKAGE ...]. Review each AUR package before installing it."
 
-# import keys
-./.scripts/addkey.sh `cat ./setup-scripts/resources/keys | grep -v '#'`
+for package in "$@"; do
+    [[ "$package" =~ ^[[:alnum:]][[:alnum:]@+_.-]*$ ]] || die "Invalid package name: $package"
+done
 
-# output packages directory creation
-[ -d $HOME/Downloads/git-downloads ] || mkdir -p $HOME/Downloads/git-downloads
+if command -v paru >/dev/null 2>&1; then
+    helper=paru
+elif command -v yay >/dev/null 2>&1; then
+    helper=yay
+else
+    die 'Install yay or paru yourself before using this optional AUR helper.'
+fi
 
-#
-# AUR
-#
-
-# yay
-# https://aur.archlinux.org/yay.git
-sudo pacman -Qi yay || ./.scripts/aur-get https://aur.archlinux.org/yay.git
-yay -Syu
-
-yes "y" | yay -S --noconfirm --useask --norebuild --needed --batchinstall --mflags --skipinteg --overwrite "*" --nodeps `cat ./setup-scripts/resources/aur-packages` || exit 1
-yes "y" | yay -S --noconfirm --useask --norebuild --needed --batchinstall --mflags --skipinteg --overwrite "*" --nodeps wmutils-git ueberzug
-
-pip install dbus-python
-
-# spicetify-cli
-# https://aur.archlinux.org/spicetify-cli.git
-# spicetify config current_theme $THEME_NAME
-# spicetify auto backup apply
-sudo chmod a+wr /opt/spotify
-sudo chmod a+wr /opt/spotify/Apps -R
-
-#
-# GITHUB
-#
-
-# BeautifulDiscord
-# https://github.com/leovoel/BeautifulDiscord
-#python3 -m pip install -U https://github.com/leovoel/BeautifulDiscord/archive/master.zip
-# use: python -m beautifuldiscord --css ~/.config/discord/rices/$THEME_NAME
-
-echo "[FINISHED]: aur/external-packages installation"
+"$helper" -S --needed "$@"

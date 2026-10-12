@@ -1,82 +1,76 @@
-#! /bin/bash
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-echo "[START]: theme installation..."
+source "$(dirname -- "${BASH_SOURCE[0]}")/lib/common.sh"
 
-SETUP_ROOT="$(dirname "$PWD")"
-arg=$1
-copy_icons_and_themes=$2
-echo $SETUP_ROOT
+declare -A themes=(
+    [ayu]=Ayu
+    [doombox]=Doombox
+    [dracula]=Dracula
+    [forest]=Forest
+    [gruvbox]=Gruvbox
+    [gruvbox-material]=GruvboxMaterial
+    [horizon]=Horizon
+    [nord]=Nord
+    [pink-nord]=PinkNord
+    [pink-nord-alternative]=PinkNordAlternative
+    [solarized-dark]=SolarizedDark
+)
 
-function setup_config {
-    replace_user="zodd"
-    # args
-    config_name=$1
-
-    # download rice if rice config directory is empty
-    [ -z "$(ls -a ./rices/$config_name | grep -v -w '^\.')" ] && ./setup-scripts/download-rice.sh $config_name
-    
-    # backup of .xinitrc, .bashrc and .zshrc
-    cp $HOME/.xinitrc $HOME/.xinitrc-backup
-    cp $HOME/.bashrc $HOME/.bashrc-backup
-    cp $HOME/.zshrc $HOME/.zshrc-backup
-
-    nohup notify-send -i $SETUP_ROOT/dotfiles/setup-scripts/resources/white-brush.png "[INFO]: copying \"$config_name\" config files..." &
-
-    #
-    # copying theme dotfiles
-    #
-    echo
-    echo "[INFO]: applying \"$config_name\" theme..."
-
-    #nohup cp -r $SETUP_ROOT/dotfiles/shared-config/. $HOME &> /dev/null
-    cp ./shared-config/.config/neofetch/config.conf $HOME/.config/neofetch
-    rm -rf $HOME/.oh-my-zsh/additional/* &> /dev/null
-    dconf load /org/gnome/gedit/ < $HOME/.config/gedit-dump.dconf
-    rm $HOME/.mozilla/firefox/mxrcz6ht.default-release-1594850756736/chrome/userChrome.css
-    rsync -ravu ./shared-config/.config/polybar/scripts/rofi-poweroff.sh ./shared-config/.config/polybar/scripts/theme-swap.sh ~/.config/polybar/scripts
-    rsync -rav --exclude "*git*" --exclude ".icons" --exclude ".themes" --exclude ".wallpapers" $SETUP_ROOT/dotfiles/rices/$config_name/. $HOME
-    rsync -ravu ./rices/$config_name/.wallpapers ./rices/$config_name/.icons ./rices/$config_name/.themes $HOME
-
-    sed -i "s/$replace_user/$USER/g" $HOME/.config/nitrogen/*.cfg
-
-    # nvim plugins installation
-    nohup nvim -E -s -u "$HOME/.config/nvim/init.vim" +PlugInstall +qall &
-
-    rm $HOME/README.md &> /dev/null
-
-    #
-    # configuring discord theme (beautifuldiscord)
-    #
-    #nohup $SETUP_ROOT/dotfiles/setup-scripts/set-discord-theme.sh &
-
-    #
-    # configuring spotify theme (spicetify)
-    #
-    #nohup $SETUP_ROOT/dotfiles/setup-scripts/set-spotify-theme.sh &
-
-    echo "[FINISHED]: theme installation"
-
+if [[ "${1:-}" == --list ]]; then
+    printf '%s\n' "${!themes[@]}" | sort
     exit 0
-}
+fi
 
-shopt -s nocasematch
-case "$arg" in 
-    "gruvbox" ) setup_config "Gruvbox" ;; 
-    "gruvbox-material" ) setup_config "GruvboxMaterial" ;; 
-    "solarized-dark" ) setup_config "SolarizedDark" ;; 
-    "pink-nord-alternative" ) setup_config "PinkNordAlternative" ;; 
-    "pink-nord" ) setup_config "PinkNord" ;; 
-    "horizon" ) setup_config "Horizon" ;; 
-    "bw" ) setup_config "BW" ;; 
-    "ayu" ) setup_config "Ayu" ;; 
-    "nord" ) setup_config "Nord" ;; 
-    "doombox" ) setup_config "Doombox" ;; 
-    "forest" ) setup_config "Forest" ;; 
-    "dracula" ) setup_config "Dracula" ;; 
-    *) echo "[ERROR]: no config with name \"$arg\" found" && notify-send -i $SETUP_ROOT/dotfiles/setup-scripts/resources/white-brush.png "[ERROR]: Selected theme does not exist" & ;;
-esac
+require_regular_user
+require_command git
+require_command rsync
 
-exit 1
+theme="${1:-}"
+[[ -n "$theme" ]] || die "Usage: $0 THEME (run '$0 --list' to see themes)"
+theme="${theme,,}"
+theme_dir="${themes[$theme]:-}"
+[[ -n "$theme_dir" ]] || die "Unknown theme '$theme'. Run '$0 --list' to see themes."
 
+rice_path="$DOTFILES_ROOT/rices/$theme_dir"
+git -C "$DOTFILES_ROOT" submodule update --init --depth 1 --recursive -- "rices/$theme_dir"
+[[ -f "$rice_path/.config/current_theme" ]] || die "Theme '$theme' did not provide its configuration; check the submodule at $rice_path"
 
+# Keep machine-specific editor state, shell histories and bookmarks out of the
+# installed theme. These were accidentally included in some upstream rices.
+mkdir -p -- "$HOME/.config"
+copy_tree_with_backup "$rice_path" "$HOME" "rice-$theme" \
+    --exclude='/.git' \
+    --exclude='/.git/**' \
+    --exclude='*/.git' \
+    --exclude='*/.git/**' \
+    --exclude='/.config/Code/**' \
+    --exclude='/.config/Code - Insiders/**' \
+    --exclude='/.config/JetBrains/**' \
+    --exclude='/.config/gedit-dump.dconf' \
+    --exclude='/.config/nitrogen/bg-saved.cfg' \
+    --exclude='/.config/gtk-3.0/bookmarks' \
+    --exclude='**/terminal/history/**' \
+    --exclude='/README.md' \
+    --exclude='/screenshot*' \
+    --exclude='/.icons/**' \
+    --exclude='/.themes/**' \
+    --exclude='/.wallpapers/**'
 
+for item in .icons .themes .wallpapers; do
+    [[ -d "$rice_path/$item" ]] || continue
+    copy_tree_with_backup "$rice_path/$item" "$HOME/$item" "rice-$theme-$item"
+done
+
+# The stock theme configs offer an optional AUR update listing. Use pacman's
+# repository query so the desktop remains usable without yay/paru.
+polybar_config="$HOME/.config/polybar/config"
+if [[ -f "$polybar_config" ]] && grep -q 'yay -Qu' "$polybar_config"; then
+    sed -i 's/yay -Qu/pacman -Qu/g' "$polybar_config"
+fi
+if [[ -f "$polybar_config" ]]; then
+    sed -i 's/#d1c4e99/#d1c4e9/g' "$polybar_config"
+fi
+
+printf "Theme '%s' installed for %s. Restart bspwm or log in again to apply it.\n" "$theme" "${USER:-your user}"
+printf 'Backups, when needed, are in %s\n' "$BACKUP_ROOT"

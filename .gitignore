@@ -1,2 +1,4 @@
 0
 nohup.out
+**/nohup.out
+*.log

@@ -1,0 +1,31 @@
+APLICACIONES
+Super + Return              Abrir terminal
+Super + D                   Buscar aplicaciones
+Super + R                   Ejecutar un comando
+Super + E                   Abrir archivos
+Super + Alt + T             Cambiar tema
+
+VENTANAS Y ESCRITORIOS
+Super + Q                   Cerrar ventana enfocada
+Super + Alt + Q             Salir de bspwm
+Super + T                   Mosaico
+Super + Shift + T           Mosaico flotante
+Super + S                   Ventana flotante
+Super + F                   Pantalla completa
+Super + flechas o H/J/K/L   Cambiar foco
+Super + Shift + flechas     Intercambiar ventanas
+Super + Shift + 1…0         Enviar ventana a otro escritorio
+Super + Ctrl + flechas      Mover ventana flotante
+Super + Alt + flechas       Redimensionar ventana flotante
+Super + 1…0                 Cambiar escritorio
+Super + [ / ]               Escritorio anterior / siguiente
+Super + M                   Alternar mosaico / una ventana
+
+UTILIDADES
+Print                       Captura de pantalla
+Super + Shift + S           Seleccionar captura y copiarla
+Ctrl + Alt + W              Elegir fondo de pantalla
+Ctrl + Alt + V              Control de volumen
+Super + Space               Cerrar notificaciones
+Super + Shift + Esc         Recuperar notificación anterior
+Super + Escape              Recargar atajos

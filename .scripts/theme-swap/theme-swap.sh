@@ -1,52 +1,40 @@
-#!/usr/bin/zsh
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-source ~/.zshrc
-
-WORKING_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
-cd $WORKING_DIR
-
-rofi_theme_selector () {
-    AVAILABLE_THEMES=$(cat ./available-themes)
-    NUMBER_OF_THEMES=$(($(printf `cat ./available-themes` | wc -l) + 1))
-    echo -e $AVAILABLE_THEMES | rofi -font "Iosevka Bold 11" -show drun -show-icons -width 20 -l $NUMBER_OF_THEMES -dmenu -i
-}
-
-change_theme () {
-    current_theme=$(cat ~/.config/current_theme)
-    chosen=$1
-    [ $chosen = $current_theme ] && notify-send -i ./resources/white-brush.png "[WARNING]: You are already using this theme!" && return 1
-    killall -9 after-theme-swap
-
-    cd $DOTFILES && $DOTFILES/setup-scripts/rices.sh $chosen
-    cd $WORKING_DIR
-    ./after-theme-swap.sh
-}
-
-POSITIONAL=()
-while [[ $# -gt 0 ]]; do
-  key="$1"
-
-  case $key in
-    -r|--rofi)
-      chosen=$(rofi_theme_selector)
-      shift # past argument
-      ;;
-    -t|--theme)
-      chosen="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    *)    # unknown option
-      POSITIONAL+=("$1") # save it in an array for later
-      shift # past argument
-      ;;
-  esac
-done
-
-if [ -z $chosen ];
-then
-    echo "[ERROR]: unvalid theme"
-else
-    change_theme $chosen
+repo_file="$HOME/.config/dotfiles/repo"
+repo_root="${DOTFILES_REPO:-}"
+if [[ -z "$repo_root" && -r "$repo_file" ]]; then
+    IFS= read -r repo_root < "$repo_file" || true
 fi
+[[ -n "$repo_root" && -x "$repo_root/setup-scripts/rices.sh" ]] || {
+    printf 'Dotfiles repository path is not configured. Run ./setup.sh base first.\n' >&2
+    exit 1
+}
 
+usage() {
+    printf 'Usage: %s --rofi | --theme THEME\n' "${0##*/}"
+}
+
+theme=""
+case "${1:-}" in
+    --rofi|-r)
+        command -v rofi >/dev/null 2>&1 || { printf 'rofi is not installed.\n' >&2; exit 1; }
+        theme="$(rofi -dmenu -i -p 'Theme' < "$repo_root/.scripts/theme-swap/available-themes")"
+        ;;
+    --theme|-t)
+        [[ -n "${2:-}" ]] || { usage >&2; exit 2; }
+        theme="$2"
+        ;;
+    -h|--help)
+        usage
+        exit 0
+        ;;
+    *)
+        usage >&2
+        exit 2
+        ;;
+esac
+
+[[ -n "$theme" ]] || exit 0
+"$repo_root/setup-scripts/rices.sh" "$theme"
+"$repo_root/.scripts/theme-swap/after-theme-swap.sh"

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+if command -v neofetch >/dev/null 2>&1; then
+    exec neofetch "$@"
+elif command -v fastfetch >/dev/null 2>&1; then
+    exec fastfetch "$@"
+else
+    printf 'Install fastfetch (official repository) or neofetch (AUR) to show system information.\n' >&2
+    exit 127
+fi
